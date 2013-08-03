@@ -15,39 +15,22 @@
 
 </head>
 <body>
-    <svg width="640" height="480">
+    <svg width="100%" height="100%">
         
     </svg>
 
     <script type="text/javascript">
         var svg = d3.select('svg');
 
-        var device1 = new swiftsense.models.Device(1);
-        var device_vew1 = new swiftsense.views.DeviceView(svg, device1);
-        var device2 = new swiftsense.models.Device(2);
-        var device_vew2 = new swiftsense.views.DeviceView(svg, device2);
-        var device3 = new swiftsense.models.Device(3);
-        var device_vew3 = new swiftsense.views.DeviceView(svg, device3);
+        var data = [
+            {id: 0, region: 0, zone: 1, ip_address: '127.0.0.1', port: 6010},
+            {id: 1, region: 0, zone: 2, ip_address: '127.0.0.1', port: 6020},
+            {id: 2, region: 0, zone: 3, ip_address: '127.0.0.1', port: 6030},
+            {id: 3, region: 0, zone: 4, ip_address: '127.0.0.1', port: 6040},
+        ]
+        var models = swiftsense.models.build_model(data);
+        var views = swiftsense.views.build_views(svg, models);
 
-        var node1 = new swiftsense.models.Node('127.0.0.1', [device1, device2, device3]);
-        var node_view1 = new swiftsense.views.NodeView(svg, node1, [device_vew1, device_vew2, device_vew3]);
-
-        var device4 = new swiftsense.models.Device(4);
-        var device_vew4 = new swiftsense.views.DeviceView(svg, device4);
-        var device5 = new swiftsense.models.Device(5);
-        var device_vew5 = new swiftsense.views.DeviceView(svg, device5);
-        var device6 = new swiftsense.models.Device(6);
-        var device_vew6 = new swiftsense.views.DeviceView(svg, device6);
-
-        var node2 = new swiftsense.models.Node('192.168.0.123', [device4, device5, device6]);
-        var node_view2 = new swiftsense.views.NodeView(svg, node2, [device_vew4, device_vew5, device_vew6]);
-
-
-        var zone1 = new swiftsense.models.Zone(1, [node1, node2]);
-        var zone_view1 = new swiftsense.views.ZoneView(svg, zone1, [node_view1, node_view2]);
-        zone_view1.x = 30;
-        zone_view1.y = 30;
-        zone_view1.update();
     </script>
 
 </body>

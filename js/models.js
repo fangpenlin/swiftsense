@@ -1,10 +1,10 @@
 (function (ns) {
     var models = {};
 
-    function Device(id, options) {
-        options = options || {};
+    function Device(id, ip_address, port) {
         this.id = id;
-        this.port = options.port;
+        this.ip_address = ip_address;
+        this.port = port;
     }
 
     /**
@@ -25,26 +25,91 @@
         A Node model
     **/
     Node.prototype = {
+        add_device: function (device) {
+            this.devices.push(device);
+        },
+
         // dummy end attribute
         __END__: null
     };
 
-    function Zone(id, nodes, options) {
+    function Zone(id, devices, options) {
         options = options || {};
         this.id = id;
-        this.nodes = nodes || [];
+        this.devices = devices || [];
     }
 
     /**
         A Zone model
     **/
     Zone.prototype = {
+        add_device: function (device) {
+            this.devices.push(device);
+        },
+
         // dummy end attribute
         __END__: null
     };
 
+    function Region(id, zones, options) {
+        options = options || {};
+        this.id = id;
+        this.zones = zones || [];
+    }
+
+    /**
+        A Region model
+    **/
+    Region.prototype = {
+        add_zone: function (zone) {
+            this.zones.push(zone);
+        },
+
+        // dummy end attribute
+        __END__: null
+    };
+
+    var build_model = function (devices) {
+        var device_models = {};
+        var node_models = {};
+        var zone_models = {};
+        var region_models = {};
+        devices.forEach(function(d, i) {
+            // TODO: handle region here
+            var region = region_models[d.region];
+            if (typeof region === 'undefined') {
+                region = new Region(d.region);
+                region_models[d.region] = region;
+            }
+            var zone = zone_models[d.zone];
+            if (typeof zone === 'undefined') {
+                zone = new Zone(d.zone);
+                zone_models[d.zone] = zone;
+                region.add_zone(zone);
+            }
+            var node = node_models[d.ip_address];
+            if (typeof node === 'undefined') {
+                node = new Node(d.ip_address);
+                node_models[d.ip_address] = node;
+            }
+            var device = new Device(d.id, d.ip_address, d.port);
+            device_models[d.id] = device;
+            zone.add_device(device);
+            node.add_device(device);
+        });
+        return {
+            'devices': device_models,
+            'zones': zone_models,
+            'regions': region_models,
+            'nodes': node_models
+        };
+    };
+
     models.Device = Device;
-    models.Node = Node;
     models.Zone = Zone;
+    models.Region = Region;
+    models.Node = Node;
+    models.build_model = build_model;
+
     ns.models = models;
 })(window.swiftsense);

@@ -71,101 +71,20 @@
         __END__: null
     };
 
-    function NodeView(svg, node, device_views, options) {
+    function ZoneView(svg, zone, device_views, options) {
         options = options || {};
         this.svg = svg;
-        this.node = node;
+        this.zone = zone;
         this.device_views = device_views || [];
         this.x = options.x || 0;
         this.y = options.y || 0;
         this.padding = options.padding || 20;
-        this.header = options.header || 20;
+        this.header = options.header || 30;
         this.color = options.color || '#ED6D00';
-        this.init();
-    }
-
-    /**
-        Node view object
-    **/
-    NodeView.prototype = {
-        init: function() {
-            this.group = this.svg.insert('g', '.device')
-            this.rect = this.group.append('rect');
-            this.text = this.group.append('text');
-            this.group.data([this]);
-            this.update();
-        },
-
-        add_device_view: function(device_view) {
-            this.device_views.append(device_view);
-        },
-
-        /*
-            Reflect data to the view
-        */
-        update: function (decorator) {
-            var self = this;
-            var group = this.group;
-            var rect = this.rect;
-            var text = this.text;
-
-            this.width = (this.padding * 2) + 
-                ns.utils.max(this.device_views, function(e) { return e.width; })
-            ;
-            this.height = this.header + 
-                (this.padding * (this.device_views.length + 1)) + 
-                ns.utils.sum(this.device_views, function(e) { return e.height; })
-            ;
-
-            var total_y = self.y + self.header + self.padding;
-            this.device_views.forEach(function (d, i) {
-                d.y = total_y;
-                d.x = self.x + self.padding;
-                total_y += d.height + self.padding;
-                d.update(decorator);
-            });
-
-            if (typeof decorator === 'function') {
-                group = decorator(group);
-                rect = decorator(rect);
-                text = decorator(text);
-            }
-            group
-                .attr('class', 'node')
-                .attr('transform', 'translate(' + this.x + ',' + this.y + ')')
-            ;
-            rect
-                .attr('width', this.width)
-                .attr('height', this.height)
-                .style('fill', this.color)
-            ;
-            text
-                .text('Node ' + self.node.ip)
-                .attr('x', this.width / 2)
-                .attr('y', this.header / 2)
-                .attr('dy', '0.35em')
-                .attr('text-anchor', 'middle')
-            ;
-        },
-
-        element: function() {
-            return this.group;
-        },
-
-        // dummy end attribute
-        __END__: null
-    };
-
-    function ZoneView(svg, zone, zone_views, options) {
-        options = options || {};
-        this.svg = svg;
-        this.zone = zone;
-        this.zone_views = zone_views || [];
-        this.x = options.x || 0;
-        this.y = options.y || 0;
-        this.padding = options.padding || 20;
-        this.header = options.header || 20;
-        this.color = options.color || '#F6A704';
+        this.default_width = options.default_width || 160;
+        this.default_height = options.default_height || this.header;
+        this.width = this.default_width;
+        this.height = options.default_height;
         this.init();
     }
 
@@ -174,11 +93,32 @@
     **/
     ZoneView.prototype = {
         init: function() {
-            this.group = this.svg.insert('g', '.node')
+            this.group = this.svg.insert('g', '.device')
             this.rect = this.group.append('rect');
             this.text = this.group.append('text');
             this.group.data([this]);
             this.update();
+        },
+
+        _update_size: function() {
+            this.width = (this.padding * 2) + 
+                ns.utils.max(this.device_views, function(e) { return e.width; })
+            ;
+            if (!this.width) {
+                this.width = self.default_width;
+            }
+            this.height = this.header + 
+                (this.padding * this.device_views.length) + 
+                ns.utils.sum(this.device_views, function(e) { return e.height; })
+            ;
+            if (!this.device_views.length) {
+                this.height = self.default_height;
+            }
+        },
+
+        add_device: function(device) {
+            this.device_views.push(device);
+            this._update_size();
         },
 
         /*
@@ -190,18 +130,13 @@
             var rect = this.rect;
             var text = this.text;
 
-            this.width = (this.zone_views.length + 1) * this.padding +
-                ns.utils.sum(this.zone_views, function(e) { return e.width; })
-            ;
-            this.height = this.header + this.padding + 
-                ns.utils.max(this.zone_views, function(e) { return e.height; })
-            ;
+            this._update_size();
 
-            var total_x = self.x + self.padding;
-            this.zone_views.forEach(function (d, i) {
-                d.y = self.y + self.header;
-                d.x = total_x;
-                total_x += d.width + self.padding;
+            var total_y = self.y + self.header;
+            this.device_views.forEach(function (d, i) {
+                d.y = total_y;
+                d.x = self.x + self.padding;
+                total_y += d.height + self.padding;
                 d.update(decorator);
             });
 
@@ -236,8 +171,138 @@
         __END__: null
     };
 
+    function RegionView(svg, region, zone_views, options) {
+        options = options || {};
+        this.svg = svg;
+        this.region = region;
+        this.zone_views = zone_views || [];
+        this.x = options.x || 0;
+        this.y = options.y || 0;
+        this.padding = options.padding || 20;
+        this.header = options.header || 30;
+        this.color = options.color || '#F6A704';
+        this.default_width = options.default_width || 160;
+        this.default_height = options.default_height || this.header;
+        this.width = this.default_width;
+        this.height = options.default_height;
+        this.init();
+    }
+
+    /**
+        Region view object
+    **/
+    RegionView.prototype = {
+        init: function() {
+            this.group = this.svg.insert('g', '.zone')
+            this.rect = this.group.append('rect');
+            this.text = this.group.append('text');
+            this.group.data([this]);
+            this.update();
+        },
+
+        add_zone: function (zone) {
+            this.zone_views.push(zone);
+            this._update_size();
+        },
+
+        _update_size: function () {
+            this.width = (this.zone_views.length + 1) * this.padding +
+                ns.utils.sum(this.zone_views, function(e) { return e.width; })
+            ;
+            if (!this.zone_views.length) {
+                this.width = self.default_width;
+            }
+            this.height = this.header + this.padding + 
+                ns.utils.max(this.zone_views, function(e) { return e.height; })
+            ;
+            if (!this.height) {
+                this.height = this.default_height;
+            }
+        },
+
+        /*
+            Reflect data to the view
+        */
+        update: function (decorator) {
+            var self = this;
+            var group = this.group;
+            var rect = this.rect;
+            var text = this.text;
+
+            this._update_size();
+
+            var total_x = self.x + self.padding;
+            this.zone_views.forEach(function (d, i) {
+                d.y = self.y + self.header;
+                d.x = total_x;
+                total_x += d.width + self.padding;
+                d.update(decorator);
+            });
+
+            if (typeof decorator === 'function') {
+                group = decorator(group);
+                rect = decorator(rect);
+                text = decorator(text);
+            }
+            group
+                .attr('class', 'region')
+                .attr('transform', 'translate(' + this.x + ',' + this.y + ')')
+            ;
+            rect
+                .attr('width', this.width)
+                .attr('height', this.height)
+                .style('fill', this.color)
+            ;
+            text
+                .text('Region ' + self.region.id)
+                .attr('x', this.width / 2)
+                .attr('y', this.header / 2)
+                .attr('dy', '0.35em')
+                .attr('text-anchor', 'middle')
+            ;
+        },
+
+        element: function() {
+            return this.group;
+        },
+
+        // dummy end attribute
+        __END__: null
+    };
+
+    var build_views = function (svg, models) {
+        var device_views = {};
+        var zone_views = {};
+        var region_views = {};
+        var node_views = {};
+        for (var rk in models.regions) {
+            var region = models.regions[rk];
+            var region_view = new RegionView(svg, region);
+            region_views[region.id] = region_view;
+            region.zones.forEach(function (zone) {
+                var zone_view = new ZoneView(svg, zone);
+                zone_views[zone.id] = zone_view;
+                zone.devices.forEach(function (device) {
+                    var device_view = new DeviceView(svg, device);
+                    device_views[device.id] = device_view;
+                    zone_view.add_device(device_view);
+                });
+                region_view.add_zone(zone_view);
+            });
+            region_view.update();
+        }
+        // TODO: handle region here
+        return {
+            'devices': device_views,
+            'nodes': node_views,
+            'zones': zone_views,
+        };
+    };
+
     views.DeviceView = DeviceView;
-    views.NodeView = NodeView;
     views.ZoneView = ZoneView;
+    views.RegionView = RegionView;
+    //views.NodeView = NodeView;
+    views.build_views = build_views;
     ns.views = views;
 })(window.swiftsense);
