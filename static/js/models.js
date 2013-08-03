@@ -1,9 +1,9 @@
 (function (ns) {
     var models = {};
 
-    function Device(id, ip_address, port) {
+    function Device(id, ip, port) {
         this.id = id;
-        this.ip_address = ip_address;
+        this.ip = ip;
         this.port = port;
     }
 
@@ -87,12 +87,12 @@
                 zone_models[d.zone] = zone;
                 region.add_zone(zone);
             }
-            var node = node_models[d.ip_address];
+            var node = node_models[d.ip];
             if (typeof node === 'undefined') {
-                node = new Node(d.ip_address);
-                node_models[d.ip_address] = node;
+                node = new Node(d.ip);
+                node_models[d.ip] = node;
             }
-            var device = new Device(d.id, d.ip_address, d.port);
+            var device = new Device(d.id, d.ip, d.port);
             device_models[d.id] = device;
             zone.add_device(device);
             node.add_device(device);

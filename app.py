@@ -1,4 +1,3 @@
-import json
 import StringIO
 
 from flask import Flask

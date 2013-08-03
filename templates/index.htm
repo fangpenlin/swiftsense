@@ -30,6 +30,45 @@
         var replica2part2dev_id = {{ replica2part2dev_id | tojson }};
         var models = swiftsense.models.build_model(devs);
         var views = swiftsense.views.build_views(svg, models);
+        // TODO:
+        views.regions[1].x = 160 * 2 + 40;
+        views.regions[1].update();
+
+        function draw_ring(x, y, data, inner, outer, colors) {
+            var delta_angle = (Math.PI * 2) / data.length;
+            var g = svg.selectAll('.arc')
+                .data(data)
+            .enter().append('g')
+                .attr('transform', 'translate(' + x + ', ' + y + ')')
+            ;
+            g.append('path')
+                .style('fill', function (d, i) {
+                    return colors[d];
+                })
+                .attr('d', function (d, i) {
+                    return d3.svg.arc()
+                        .innerRadius(inner)
+                        .outerRadius(outer)
+                        .startAngle(delta_angle * i)
+                        .endAngle(delta_angle * (i + 1))()
+                    ;
+                })
+            ;
+            return g;
+        }
+
+        var colors = [];
+        var delta = 360.0 / devs.length;
+        for (var i = 0; i < devs.length; ++i) {
+            var color = d3.hsl(delta * i, 0.9, 0.5);
+            colors.push(color);
+            views.devices[i].label_color = color;
+            views.devices[i].update();
+        }
+
+        replica2part2dev_id.forEach(function (d, i) {
+            draw_ring(160, 160, d, 100 + i * 20, 100 + (i + 1) * 20, colors);
+        });
 
     </script>
     {% endif %}

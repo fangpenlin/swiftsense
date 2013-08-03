@@ -10,6 +10,7 @@
         this.width = options.width || 160;
         this.height = options.height || 50;
         this.color = options.color || '#DD2E00';
+        this.label_color = options.label_color;
         this.init();
     }
 
@@ -33,6 +34,10 @@
             var group = this.group;
             var rect = this.rect;
             var text = this.text;
+
+            if (this.label_color && !this.label_box) {
+                this.label_box = this.group.append('rect');
+            }
             /*
                 This is a useful decorator function, you can pass it such as
 
@@ -44,6 +49,9 @@
                 group = decorator(group);
                 rect = decorator(rect);
                 text = decorator(text);
+                if (this.label_box) {
+                    decorator(this.label_box);
+                }
             }
             group
                 .attr('class', 'device')
@@ -61,6 +69,16 @@
                 .attr('dy', '0.35em')
                 .attr('text-anchor', 'middle')
             ;
+            if (this.label_box) {
+                this.label_box
+                    .attr('width', 16)
+                    .attr('height', 16)
+                    .attr('x', 20)
+                    .attr('y', (this.height / 2) - 8)
+                    .style('fill', this.label_color)
+                    .style('stroke', 'black')
+                ;
+            }
         },
 
         element: function() {
@@ -102,14 +120,14 @@
 
         _update_size: function() {
             this.width = (this.padding * 2) + 
-                ns.utils.max(this.device_views, function(e) { return e.width; })
+                d3.max(this.device_views, function(e) { return e.width; })
             ;
             if (!this.width) {
                 this.width = self.default_width;
             }
             this.height = this.header + 
                 (this.padding * this.device_views.length) + 
-                ns.utils.sum(this.device_views, function(e) { return e.height; })
+                d3.sum(this.device_views, function(e) { return e.height; })
             ;
             if (!this.device_views.length) {
                 this.height = self.default_height;
@@ -207,13 +225,13 @@
 
         _update_size: function () {
             this.width = (this.zone_views.length + 1) * this.padding +
-                ns.utils.sum(this.zone_views, function(e) { return e.width; })
+                d3.sum(this.zone_views, function(e) { return e.width; })
             ;
             if (!this.zone_views.length) {
                 this.width = self.default_width;
             }
             this.height = this.header + this.padding + 
-                ns.utils.max(this.zone_views, function(e) { return e.height; })
+                d3.max(this.zone_views, function(e) { return e.height; })
             ;
             if (!this.height) {
                 this.height = this.default_height;
@@ -296,6 +314,7 @@
             'devices': device_views,
             'nodes': node_views,
             'zones': zone_views,
+            'regions': region_views,
         };
     };
 
