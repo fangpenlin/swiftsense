@@ -21,17 +21,33 @@
 
     <script type="text/javascript">
         var svg = d3.select('svg');
+
         var device1 = new swiftsense.models.Device(1);
         var device_vew1 = new swiftsense.views.DeviceView(svg, device1);
         var device2 = new swiftsense.models.Device(2);
         var device_vew2 = new swiftsense.views.DeviceView(svg, device2);
-        //device_vew2.y = device_vew1.y + device_vew1.height + 10;
-        //device_vew2.update(function (e) { return e.transition(); });
+        var device3 = new swiftsense.models.Device(3);
+        var device_vew3 = new swiftsense.views.DeviceView(svg, device3);
 
-        var node1 = new swiftsense.models.Node('127.0.0.1', [device1, device2]);
-        var node_view1 = new swiftsense.views.NodeView(svg, node1, [device_vew1, device_vew2]);
-        node_view1.element().order(0);
+        var node1 = new swiftsense.models.Node('127.0.0.1', [device1, device2, device3]);
+        var node_view1 = new swiftsense.views.NodeView(svg, node1, [device_vew1, device_vew2, device_vew3]);
 
+        var device4 = new swiftsense.models.Device(4);
+        var device_vew4 = new swiftsense.views.DeviceView(svg, device4);
+        var device5 = new swiftsense.models.Device(5);
+        var device_vew5 = new swiftsense.views.DeviceView(svg, device5);
+        var device6 = new swiftsense.models.Device(6);
+        var device_vew6 = new swiftsense.views.DeviceView(svg, device6);
+
+        var node2 = new swiftsense.models.Node('192.168.0.123', [device4, device5, device6]);
+        var node_view2 = new swiftsense.views.NodeView(svg, node2, [device_vew4, device_vew5, device_vew6]);
+
+
+        var zone1 = new swiftsense.models.Zone(1, [node1, node2]);
+        var zone_view1 = new swiftsense.views.ZoneView(svg, zone1, [node_view1, node_view2]);
+        zone_view1.x = 30;
+        zone_view1.y = 30;
+        zone_view1.update();
     </script>
 
 </body>

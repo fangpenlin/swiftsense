@@ -29,8 +29,22 @@
         __END__: null
     };
 
+    function Zone(id, nodes, options) {
+        options = options || {};
+        this.id = id;
+        this.nodes = nodes || [];
+    }
+
+    /**
+        A Zone model
+    **/
+    Zone.prototype = {
+        // dummy end attribute
+        __END__: null
+    };
+
     models.Device = Device;
     models.Node = Node;
-
+    models.Zone = Zone;
     ns.models = models;
 })(window.swiftsense);

@@ -7,7 +7,7 @@
         this.device = device;
         this.x = options.x || 0;
         this.y = options.y || 0;
-        this.width = options.width || 120;
+        this.width = options.width || 160;
         this.height = options.height || 50;
         this.color = options.color || '#DD2E00';
         this.init();
@@ -63,6 +63,10 @@
             ;
         },
 
+        element: function() {
+            return this.group;
+        },
+
         // dummy end attribute
         __END__: null
     };
@@ -74,7 +78,7 @@
         this.device_views = device_views || [];
         this.x = options.x || 0;
         this.y = options.y || 0;
-        this.padding = options.padding || 10;
+        this.padding = options.padding || 20;
         this.header = options.header || 20;
         this.color = options.color || '#ED6D00';
         this.init();
@@ -105,18 +109,18 @@
             var rect = this.rect;
             var text = this.text;
 
-            var width = (this.padding * 2) + 
+            this.width = (this.padding * 2) + 
                 ns.utils.max(this.device_views, function(e) { return e.width; })
             ;
-            var height = this.header + 
+            this.height = this.header + 
                 (this.padding * (this.device_views.length + 1)) + 
                 ns.utils.sum(this.device_views, function(e) { return e.height; })
             ;
 
-            var total_y = self.header + self.padding;
+            var total_y = self.y + self.header + self.padding;
             this.device_views.forEach(function (d, i) {
                 d.y = total_y;
-                d.x = self.padding;
+                d.x = self.x + self.padding;
                 total_y += d.height + self.padding;
                 d.update(decorator);
             });
@@ -131,13 +135,93 @@
                 .attr('transform', 'translate(' + this.x + ',' + this.y + ')')
             ;
             rect
-                .attr('width', width)
-                .attr('height', height)
+                .attr('width', this.width)
+                .attr('height', this.height)
                 .style('fill', this.color)
             ;
             text
                 .text('Node ' + self.node.ip)
-                .attr('x', width / 2)
+                .attr('x', this.width / 2)
+                .attr('y', this.header / 2)
+                .attr('dy', '0.35em')
+                .attr('text-anchor', 'middle')
+            ;
+        },
+
+        element: function() {
+            return this.group;
+        },
+
+        // dummy end attribute
+        __END__: null
+    };
+
+    function ZoneView(svg, zone, zone_views, options) {
+        options = options || {};
+        this.svg = svg;
+        this.zone = zone;
+        this.zone_views = zone_views || [];
+        this.x = options.x || 0;
+        this.y = options.y || 0;
+        this.padding = options.padding || 20;
+        this.header = options.header || 20;
+        this.color = options.color || '#F6A704';
+        this.init();
+    }
+
+    /**
+        Zone view object
+    **/
+    ZoneView.prototype = {
+        init: function() {
+            this.group = this.svg.insert('g', '.node')
+            this.rect = this.group.append('rect');
+            this.text = this.group.append('text');
+            this.group.data([this]);
+            this.update();
+        },
+
+        /*
+            Reflect data to the view
+        */
+        update: function (decorator) {
+            var self = this;
+            var group = this.group;
+            var rect = this.rect;
+            var text = this.text;
+
+            this.width = (this.zone_views.length + 1) * this.padding +
+                ns.utils.sum(this.zone_views, function(e) { return e.width; })
+            ;
+            this.height = this.header + this.padding + 
+                ns.utils.max(this.zone_views, function(e) { return e.height; })
+            ;
+
+            var total_x = self.x + self.padding;
+            this.zone_views.forEach(function (d, i) {
+                d.y = self.y + self.header;
+                d.x = total_x;
+                total_x += d.width + self.padding;
+                d.update(decorator);
+            });
+
+            if (typeof decorator === 'function') {
+                group = decorator(group);
+                rect = decorator(rect);
+                text = decorator(text);
+            }
+            group
+                .attr('class', 'zone')
+                .attr('transform', 'translate(' + this.x + ',' + this.y + ')')
+            ;
+            rect
+                .attr('width', this.width)
+                .attr('height', this.height)
+                .style('fill', this.color)
+            ;
+            text
+                .text('Zone ' + self.zone.id)
+                .attr('x', this.width / 2)
                 .attr('y', this.header / 2)
                 .attr('dy', '0.35em')
                 .attr('text-anchor', 'middle')
@@ -154,5 +238,6 @@
 
     views.DeviceView = DeviceView;
     views.NodeView = NodeView;
+    views.ZoneView = ZoneView;
     ns.views = views;
 })(window.swiftsense);
