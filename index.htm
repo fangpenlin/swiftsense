@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <meta name="description" content="" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <!--[if lt IE 8]>
+    <![endif]-->
+
+    <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+    <script src="js/namespace.js" charset="utf-8"></script>
+    <script src="js/utils.js" charset="utf-8"></script>
+    <script src="js/models.js" charset="utf-8"></script>
+    <script src="js/views.js" charset="utf-8"></script>
+
+</head>
+<body>
+    <svg width="640" height="480">
+        
+    </svg>
+
+    <script type="text/javascript">
+        var svg = d3.select('svg');
+        var device1 = new swiftsense.models.Device(1);
+        var device_vew1 = new swiftsense.views.DeviceView(svg, device1);
+        var device2 = new swiftsense.models.Device(2);
+        var device_vew2 = new swiftsense.views.DeviceView(svg, device2);
+        //device_vew2.y = device_vew1.y + device_vew1.height + 10;
+        //device_vew2.update(function (e) { return e.transition(); });
+
+        var node1 = new swiftsense.models.Node('127.0.0.1', [device1, device2]);
+        var node_view1 = new swiftsense.views.NodeView(svg, node1, [device_vew1, device_vew2]);
+        node_view1.element().order(0);
+
+    </script>
+
+</body>
+</html>
