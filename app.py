@@ -34,7 +34,7 @@ app = Flask(__name__)
 
 @app.route("/", methods=['GET', 'POST'])
 def index():
-    data = None
+    data = replica2part2dev_id = None
     if request.method == 'POST':
         f = request.files['file']
         content = f.read()
