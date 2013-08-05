@@ -94,10 +94,22 @@
             svg.selectAll('.device-' + d.device.id)
                 .style('fill', colors[d.device.id])
             ;
+            views.devices[d.device.id].rect
+                .style('stroke', 'black')
+                .style('stroke-width', 0)
+            .transition()
+                .duration(300)
+                .style('stroke-width', 2)
+            ;
         });
         svg.selectAll('.device').on('mouseout', function (d) {
             svg.selectAll('.ring-arc')
                 .style('fill', function (id) { return colors[id]; })
+            ;
+            views.devices[d.device.id].rect
+            .transition()
+                .duration(300)
+                .style('stroke-width', 0)
             ;
         });
     </script>
