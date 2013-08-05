@@ -52,6 +52,7 @@
             var g = svg.selectAll('.arc')
                 .data(data)
             .enter().append('g')
+                .attr('class', 'ring')
                 .attr('transform', 'translate(' + x + ', ' + y + ')')
             ;
             g.append('path')
@@ -79,8 +80,9 @@
             views.devices[i].update();
         }
 
+        var radius_delta = 80 / replica2part2dev_id.length;
         replica2part2dev_id.forEach(function (d, i) {
-            draw_ring(160, 160, d, 100 + i * 20, 100 + (i + 1) * 20, colors);
+            draw_ring(160, 160, d, 80 + i * radius_delta, 80 + (i + 1) * radius_delta, colors);
         });
 
     </script>
