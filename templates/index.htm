@@ -30,9 +30,22 @@
         var replica2part2dev_id = {{ replica2part2dev_id | tojson }};
         var models = swiftsense.models.build_model(devs);
         var views = swiftsense.views.build_views(svg, models);
-        // TODO:
-        views.regions[1].x = 160 * 2 + 40;
-        views.regions[1].update();
+
+        // layout regions
+        var region_ids = [];
+        for (var k in views.regions) {
+            region_ids.push(k);
+        }
+        region_ids.sort();
+
+        var y_offset = 0;
+        region_ids.forEach(function (d) {
+            var region = views.regions[d];
+            region.x = 160 * 2 + 40;
+            region.y = y_offset
+            region.update();
+            y_offset += region.height + 10;
+        });
 
         function draw_ring(x, y, data, inner, outer, colors) {
             var delta_angle = (Math.PI * 2) / data.length;

@@ -43,7 +43,7 @@ THE SOFTWARE.
     **/
     DeviceView.prototype = {
         init: function() {
-            this.group = this.svg.append('g')
+            this.group = this.svg.append('g');
             this.rect = this.group.append('rect');
             this.text = this.group.append('text');
             this.group.data([this]);
@@ -135,7 +135,7 @@ THE SOFTWARE.
     **/
     ZoneView.prototype = {
         init: function() {
-            this.group = this.svg.insert('g', '.device')
+            this.group = this.svg.insert('g', '.device');
             this.rect = this.group.append('rect');
             this.text = this.group.append('text');
             this.group.data([this]);
@@ -143,14 +143,14 @@ THE SOFTWARE.
         },
 
         _update_size: function() {
-            this.width = (this.padding * 2) + 
+            this.width = (this.padding * 2) +
                 d3.max(this.device_views, function(e) { return e.width; })
             ;
             if (!this.width) {
                 this.width = self.default_width;
             }
-            this.height = this.header + 
-                (this.padding * this.device_views.length) + 
+            this.height = this.header +
+                (this.padding * this.device_views.length) +
                 d3.sum(this.device_views, function(e) { return e.height; })
             ;
             if (!this.device_views.length) {
@@ -235,7 +235,7 @@ THE SOFTWARE.
     **/
     RegionView.prototype = {
         init: function() {
-            this.group = this.svg.insert('g', '.zone')
+            this.group = this.svg.insert('g', '.zone');
             this.rect = this.group.append('rect');
             this.text = this.group.append('text');
             this.group.data([this]);
@@ -254,7 +254,7 @@ THE SOFTWARE.
             if (!this.zone_views.length) {
                 this.width = self.default_width;
             }
-            this.height = this.header + this.padding + 
+            this.height = this.header + this.padding +
                 d3.max(this.zone_views, function(e) { return e.height; })
             ;
             if (!this.height) {
@@ -338,7 +338,7 @@ THE SOFTWARE.
             'devices': device_views,
             'nodes': node_views,
             'zones': zone_views,
-            'regions': region_views,
+            'regions': region_views
         };
     };
 
