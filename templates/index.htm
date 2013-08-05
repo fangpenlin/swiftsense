@@ -52,12 +52,14 @@
             var g = svg.selectAll('.arc')
                 .data(data)
             .enter().append('g')
-                .attr('class', 'ring')
                 .attr('transform', 'translate(' + x + ', ' + y + ')')
             ;
             g.append('path')
                 .style('fill', function (d, i) {
                     return colors[d];
+                })
+                .attr('class', function (d) {
+                    return 'ring-arc device-' + d;
                 })
                 .attr('d', function (d, i) {
                     return d3.svg.arc()
@@ -85,6 +87,19 @@
             draw_ring(160, 160, d, 80 + i * radius_delta, 80 + (i + 1) * radius_delta, colors);
         });
 
+        svg.selectAll('.device').on('mouseover', function (d) {
+            svg.selectAll('.ring-arc')
+                .style('fill', 'white')
+            ;
+            svg.selectAll('.device-' + d.device.id)
+                .style('fill', colors[d.device.id])
+            ;
+        });
+        svg.selectAll('.device').on('mouseout', function (d) {
+            svg.selectAll('.ring-arc')
+                .style('fill', function (id) { return colors[id]; })
+            ;
+        });
     </script>
     {% endif %}
 
