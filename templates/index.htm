@@ -46,6 +46,8 @@
             region.update();
             y_offset += region.height + 10;
         });
+        // resie the canvas
+        svg.attr('height', Math.max(y_offset, 320));
 
         function draw_ring(x, y, data, inner, outer, colors) {
             var delta_angle = (Math.PI * 2) / data.length;
