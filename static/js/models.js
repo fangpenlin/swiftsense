@@ -100,6 +100,9 @@ THE SOFTWARE.
         var region_models = {};
         devices.forEach(function(d, i) {
             // TODO: handle region here
+            if (!d) {
+                return;
+            }
             var region = region_models[d.region];
             if (typeof region === 'undefined') {
                 region = new Region(d.region);
