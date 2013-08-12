@@ -161,8 +161,8 @@
                 .attr('y', function (d) { return height - normalized_part_height(d) - padding - text_height; })
                 .attr('width', bar_width - (padding * 8))
                 .attr('height', function (d) { return normalized_part_height(d) - (padding * 2); })
-                .style('fill', function (d) { return 'white'; })
-                .style('fill-opacity', 0.4)
+                .style('fill', function (d) { return 'black'; })
+                .style('fill-opacity', 0.2)
             ;
             balance_bar.append('text')
                 .attr('dy', '.75em')
