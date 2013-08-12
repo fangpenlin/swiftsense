@@ -25,10 +25,13 @@ THE SOFTWARE.
 (function (ns) {
     var models = {};
 
-    function Device(id, ip, port) {
+    function Device(id, ip, port, weight) {
         this.id = id;
         this.ip = ip;
         this.port = port;
+        this.weight = weight;
+        // partition get placed on this device
+        this.partition_placed = 0;
     }
 
     /**
@@ -93,7 +96,7 @@ THE SOFTWARE.
         __END__: null
     };
 
-    var build_model = function (devices) {
+    var build_model = function (devices, replica2part2dev_id) {
         var device_models = {};
         var node_models = {};
         var zone_models = {};
@@ -119,11 +122,20 @@ THE SOFTWARE.
                 node = new Node(d.ip);
                 node_models[d.ip] = node;
             }
-            var device = new Device(d.id, d.ip, d.port);
+            var device = new Device(d.id, d.ip, d.port, d.weight);
             device_models[d.id] = device;
             zone.add_device(device);
             node.add_device(device);
         });
+        var i;
+        for (i = 0; i < replica2part2dev_id.length; ++i) {
+            var parts = replica2part2dev_id[i];
+            var j = 0;
+            for (j = 0; j < parts.length; ++j) {
+                var devic_id = parts[j];
+                ++device_models[devic_id].partition_placed;
+            }
+        }
         return {
             'devices': device_models,
             'zones': zone_models,
