@@ -76,12 +76,21 @@
         }
 
         var colors = [];
+        // get list of device IDs
+        var devids = [];
+        for (var devid in views.devices) {
+            if (views.devices.hasOwnProperty(devid)) {
+                devids.push(devid);
+            }
+        }
         var delta = 360.0 / devs.length;
         for (var i = 0; i < devs.length; ++i) {
-            var color = d3.hsl(delta * i, 0.9, 0.5);
-            colors.push(color);
-            views.devices[i].label_color = color;
-            views.devices[i].update();
+            if (views.devices[devids[i]] !== undefined) {
+                var color = d3.hsl(delta * i, 0.9, 0.5);
+                colors.push(color);
+                views.devices[devids[i]].label_color = color;
+                views.devices[devids[i]].update();
+            }
         }
 
         var radius_delta = 80 / replica2part2dev_id.length;
