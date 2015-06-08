@@ -41,6 +41,9 @@ def index():
         fileobj = StringIO.StringIO(content)
         data = RingData.load(fileobj)
         replica2part2dev_id = map(list, data._replica2part2dev_id)
+        #remove null devices
+        new_devs = [ dev for dev in data.devs if dev is not None ]
+        data.devs = new_devs
 
     return render_template('index.htm', 
         data=data,
