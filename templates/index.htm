@@ -75,7 +75,7 @@
             return g;
         }
 
-        var colors = [];
+        var colors = {};
         // get list of device IDs
         var devids = [];
         for (var devid in views.devices) {
@@ -87,7 +87,7 @@
         for (var i = 0; i < devs.length; ++i) {
             if (views.devices[devids[i]] !== undefined) {
                 var color = d3.hsl(delta * i, 0.9, 0.5);
-                colors.push(color);
+                colors[devids[i]] = color;
                 views.devices[devids[i]].label_color = color;
                 views.devices[devids[i]].update();
             }
@@ -126,25 +126,24 @@
 
         // draw balance bars
         // TODO: find a better way to orginze these code
-        var dev_models = [];
-        devs.forEach(function (d) {
-            dev_models.push(models.devices[d.id]);
-        });
+        var dev_models = Object.keys(models.devices).map(function(k) {
+          return models.devices[k]
+        })
         var draw_balanced_bar = function (x, y, width, height, padding) {
             if (typeof padding === 'undefined') {
                 padding = 2;
             }
             var bar_width = width / dev_models.length;
-            var max_parts = d3.max(dev_models, function(d) { return d.partition_placed });
-            var max_normalized_parts = d3.max(dev_models, function(d) { return d.partition_placed / d.weight });
+            var max_parts = d3.max(dev_models, function(d) { return d.parts });
+            var max_normalized_parts = d3.max(dev_models, function(d) { return d.parts / d.weight });
             var max_part_value = Math.max(max_parts, max_normalized_parts);
             var text_height = 20;
 
             var part_height = function (d) {
-                return (d.partition_placed / max_part_value) * height - text_height;
+                return (d.parts / max_part_value) * height - text_height;
             };
             var normalized_part_height = function (d) {
-                return ((d.partition_placed / d.weight) / max_part_value) * height - text_height;
+                return ((d.parts / d.weight) / max_part_value) * height - text_height;
             };
             var bar_x = function (d, i) {
                 return padding + (i * bar_width);
@@ -185,7 +184,7 @@
                 .attr('y', function (d) { return height - part_height(d) - text_height; })
                 .attr('x', function (d, i) { return bar_x(d, i) + bar_width / 2; } )
                 .attr('text-anchor', 'middle')
-                .text(function(d) { return 'P: ' + d.partition_placed; })
+                .text(function(d) { return 'P: ' + d.parts ; })
             ;
             balance_bar.append('text')
                 .attr('dy', '1.75em')
@@ -195,7 +194,7 @@
                 .text(function(d) { return 'W: ' + d.weight; })
             ;
         };
-        draw_balanced_bar(160 * 2 + 40, 0, 400, 200);
+        draw_balanced_bar(160 * 2 + 40, 0, 800, 200);
 
     </script>
     {% endif %}
