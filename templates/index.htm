@@ -296,7 +296,7 @@
                 .attr('y', function (d) { return height - part_height(d) - text_height; })
                 .attr('x', function (d, i) { return bar_x(d, i) + bar_width / 2; } )
                 .attr('text-anchor', 'middle')
-                .text(function(d) { return 'W: ' + d.weight; })
+                .text(function(d) { return 'W: ' + d.weight.toFixed(0); })
             ;
         };
         // TODO: layout that scales to 1000's of devices
