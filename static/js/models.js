@@ -25,13 +25,12 @@ THE SOFTWARE.
 (function (ns) {
     var models = {};
 
-    function Device(id, ip, port, weight) {
+    function Device(id, ip, port, weight, parts) {
         this.id = id;
         this.ip = ip;
         this.port = port;
         this.weight = weight;
-        // partition get placed on this device
-        this.partition_placed = 0;
+        this.parts = parts;
     }
 
     /**
@@ -42,9 +41,11 @@ THE SOFTWARE.
         __END__: null
     };
 
-    function Node(ip, devices, options) {
+    function Node(zone, ip, devices, options) {
         options = options || {};
+        this.zone = zone;
         this.ip = ip;
+        this.id = zone + '-' + ip;
         this.devices = devices || [];
     }
 
@@ -60,18 +61,18 @@ THE SOFTWARE.
         __END__: null
     };
 
-    function Zone(id, devices, options) {
+    function Zone(id, nodes, options) {
         options = options || {};
         this.id = id;
-        this.devices = devices || [];
+        this.nodes = nodes || [];
     }
 
     /**
         A Zone model
     **/
     Zone.prototype = {
-        add_device: function (device) {
-            this.devices.push(device);
+        add_node: function (node) {
+            this.nodes.push(node);
         },
 
         // dummy end attribute
@@ -106,6 +107,9 @@ THE SOFTWARE.
             if (!d) {
                 return;
             }
+            if (!d.parts) {
+                return;
+            }
             var region = region_models[d.region];
             if (typeof region === 'undefined') {
                 region = new Region(d.region);
@@ -117,25 +121,16 @@ THE SOFTWARE.
                 zone_models[d.zone] = zone;
                 region.add_zone(zone);
             }
-            var node = node_models[d.ip];
+            var node = node_models[d.zone + '-' + d.ip];
             if (typeof node === 'undefined') {
-                node = new Node(d.ip);
-                node_models[d.ip] = node;
+                node = new Node(d.zone, d.ip);
+                node_models[node.id] = node;
+                zone.add_node(node);
             }
-            var device = new Device(d.id, d.ip, d.port, d.weight);
+            var device = new Device(d.id, d.ip, d.port, d.weight, d.parts);
             device_models[d.id] = device;
-            zone.add_device(device);
             node.add_device(device);
         });
-        var i;
-        for (i = 0; i < replica2part2dev_id.length; ++i) {
-            var parts = replica2part2dev_id[i];
-            var j = 0;
-            for (j = 0; j < parts.length; ++j) {
-                var devic_id = parts[j];
-                ++device_models[devic_id].partition_placed;
-            }
-        }
         return {
             'devices': device_models,
             'zones': zone_models,

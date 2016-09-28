@@ -13,6 +13,14 @@
     <script src="{{ url_for('static', filename='js/models.js') }}" charset="utf-8"></script>
     <script src="{{ url_for('static', filename='js/views.js') }}" charset="utf-8"></script>
 
+    <style>
+    #ring {
+      position: fixed;
+      top: 40px;
+      left: 20px;
+    }
+    </style>
+
 </head>
 <body>
     <form action="" method="post" enctype="multipart/form-data">
@@ -21,10 +29,12 @@
     </form>
 
     {% if data %}
-    <svg width="100%" height="100%"></svg>
+    <svg id="main" width="100%" height="100%"></svg>
+    <svg id="ring" width="320px" height="320px"></svg>
 
     <script type="text/javascript">
-        var svg = d3.select('svg');
+        var svg = d3.select('#main');
+        var ring = d3.select('#ring');
 
         var devs = {{ data.devs | tojson }};
         var replica2part2dev_id = {{ replica2part2dev_id | tojson }};
@@ -38,7 +48,7 @@
         }
         region_ids.sort();
 
-        var y_offset = 200 + 10;
+        var y_offset = 10;
         region_ids.forEach(function (d) {
             var region = views.regions[d];
             region.x = 160 * 2 + 40;
@@ -46,12 +56,10 @@
             region.update();
             y_offset += region.height + 10;
         });
-        // resie the canvas
-        svg.attr('height', Math.max(y_offset, 320));
 
         function draw_ring(x, y, data, inner, outer, colors) {
             var delta_angle = (Math.PI * 2) / data.length;
-            var g = svg.selectAll('.arc')
+            var g = ring.selectAll('.arc')
                 .data(data)
             .enter().append('g')
                 .attr('transform', 'translate(' + x + ', ' + y + ')')
@@ -75,7 +83,7 @@
             return g;
         }
 
-        var colors = [];
+        var colors = {};
         // get list of device IDs
         var devids = [];
         for (var devid in views.devices) {
@@ -87,7 +95,7 @@
         for (var i = 0; i < devs.length; ++i) {
             if (views.devices[devids[i]] !== undefined) {
                 var color = d3.hsl(delta * i, 0.9, 0.5);
-                colors.push(color);
+                colors[devids[i]] = color;
                 views.devices[devids[i]].label_color = color;
                 views.devices[devids[i]].update();
             }
@@ -98,13 +106,112 @@
             draw_ring(160, 160, d, 80 + i * radius_delta, 80 + (i + 1) * radius_delta, colors);
         });
 
-        svg.selectAll('.device').on('mouseover', function (d) {
-            svg.selectAll('.ring-arc')
+        // color ring functions
+
+        function clear_ring() {
+            ring.selectAll('.ring-arc')
                 .style('fill', 'white')
             ;
-            svg.selectAll('.device-' + d.device.id)
-                .style('fill', colors[d.device.id])
+        }
+
+        function reset_ring() {
+            clear_ring();
+            ring.selectAll('.ring-arc')
+                .style('fill', function (id) { return colors[id]; })
             ;
+        }
+
+        function color_device(device) {
+            ring.selectAll('.device-' + device.id)
+                .style('fill', colors[device.id])
+            ;
+        }
+
+        function color_node(node) {
+            node.devices.forEach(function (device) {
+                color_device(device);
+            });
+        }
+
+        function color_zone(zone) {
+            zone.nodes.forEach(function (node) {
+                color_node(node);
+            });
+        }
+
+        function color_region(region) {
+            region.zones.forEach(function (zone) {
+                color_zone(zone);
+            });
+        }
+
+        // SELECT REGION
+        svg.selectAll('.region').on('mouseover', function (r) {
+            clear_ring();
+            color_region(r.region);
+            views.regions[r.region.id].rect
+                .style('stroke', 'black')
+                .style('stroke-width', 0)
+            .transition()
+                .duration(300)
+                .style('stroke-width', 2)
+            ;
+        });
+        svg.selectAll('.region').on('mouseout', function (r) {
+            reset_ring();
+            views.regions[r.region.id].rect
+            .transition()
+                .duration(300)
+                .style('stroke-width', 0)
+            ;
+        });
+
+        // SELECT ZONE
+        svg.selectAll('.zone').on('mouseover', function (z) {
+            clear_ring();
+            color_zone(z.zone);
+            views.zones[z.zone.id].rect
+                .style('stroke', 'black')
+                .style('stroke-width', 0)
+            .transition()
+                .duration(300)
+                .style('stroke-width', 2)
+            ;
+        });
+        svg.selectAll('.zone').on('mouseout', function (z) {
+            reset_ring();
+            views.zones[z.zone.id].rect
+            .transition()
+                .duration(300)
+                .style('stroke-width', 0)
+            ;
+        });
+
+        // SELECT NODE
+        svg.selectAll('.node').on('mouseover', function (n) {
+            clear_ring();
+            color_node(n.node);
+            views.nodes[n.node.id].rect
+                .style('stroke', 'black')
+                .style('stroke-width', 0)
+            .transition()
+                .duration(300)
+                .style('stroke-width', 2)
+            ;
+        });
+        svg.selectAll('.node').on('mouseout', function (n) {
+            reset_ring();
+            views.nodes[n.node.id].rect
+            .transition()
+                .duration(300)
+                .style('stroke-width', 0)
+            ;
+        });
+
+        // SELECT DEVICE
+        svg.selectAll('.device').on('mouseover', function (d) {
+            clear_ring();
+            color_device(d.device);
             views.devices[d.device.id].rect
                 .style('stroke', 'black')
                 .style('stroke-width', 0)
@@ -114,9 +221,7 @@
             ;
         });
         svg.selectAll('.device').on('mouseout', function (d) {
-            svg.selectAll('.ring-arc')
-                .style('fill', function (id) { return colors[id]; })
-            ;
+            clear_ring();
             views.devices[d.device.id].rect
             .transition()
                 .duration(300)
@@ -126,25 +231,24 @@
 
         // draw balance bars
         // TODO: find a better way to orginze these code
-        var dev_models = [];
-        devs.forEach(function (d) {
-            dev_models.push(models.devices[d.id]);
-        });
+        var dev_models = Object.keys(models.devices).map(function(k) {
+          return models.devices[k]
+        })
         var draw_balanced_bar = function (x, y, width, height, padding) {
             if (typeof padding === 'undefined') {
                 padding = 2;
             }
             var bar_width = width / dev_models.length;
-            var max_parts = d3.max(dev_models, function(d) { return d.partition_placed });
-            var max_normalized_parts = d3.max(dev_models, function(d) { return d.partition_placed / d.weight });
+            var max_parts = d3.max(dev_models, function(d) { return d.parts });
+            var max_normalized_parts = d3.max(dev_models, function(d) { return d.parts / d.weight });
             var max_part_value = Math.max(max_parts, max_normalized_parts);
             var text_height = 20;
 
             var part_height = function (d) {
-                return (d.partition_placed / max_part_value) * height - text_height;
+                return (d.parts / max_part_value) * height - text_height;
             };
             var normalized_part_height = function (d) {
-                return ((d.partition_placed / d.weight) / max_part_value) * height - text_height;
+                return ((d.parts / d.weight) / max_part_value) * height - text_height;
             };
             var bar_x = function (d, i) {
                 return padding + (i * bar_width);
@@ -185,17 +289,35 @@
                 .attr('y', function (d) { return height - part_height(d) - text_height; })
                 .attr('x', function (d, i) { return bar_x(d, i) + bar_width / 2; } )
                 .attr('text-anchor', 'middle')
-                .text(function(d) { return 'P: ' + d.partition_placed; })
+                .text(function(d) { return 'P: ' + d.parts ; })
             ;
             balance_bar.append('text')
                 .attr('dy', '1.75em')
                 .attr('y', function (d) { return height - part_height(d) - text_height; })
                 .attr('x', function (d, i) { return bar_x(d, i) + bar_width / 2; } )
                 .attr('text-anchor', 'middle')
-                .text(function(d) { return 'W: ' + d.weight; })
+                .text(function(d) { return 'W: ' + d.weight.toFixed(0); })
             ;
         };
-        draw_balanced_bar(160 * 2 + 40, 0, 400, 200);
+        // TODO: layout that scales to 1000's of devices
+        dev_models = dev_models.slice(0, 32);
+        var dev_model_width = 72 * dev_models.length;
+        if ( dev_model_width > window.screen.width ) {
+          svg.attr('width', dev_model_width);
+        }
+        var top_of_balanced_bar = Math.max(y_offset, 400);
+        draw_balanced_bar(0, top_of_balanced_bar, Math.max(dev_model_width, 800), 200);
+        // resie the canvas
+        svg.attr('height', top_of_balanced_bar + 200);
+
+        // hide the ring if you scroll too far to the right
+        window.onscroll = function(){
+          if( window.scrollX > 20 ){
+            ring.style('display', 'none');
+          } else {
+            ring.style('display', 'inline');
+          }
+        };
 
     </script>
     {% endif %}
