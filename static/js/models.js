@@ -41,9 +41,11 @@ THE SOFTWARE.
         __END__: null
     };
 
-    function Node(ip, devices, options) {
+    function Node(zone, ip, devices, options) {
         options = options || {};
+        this.zone = zone;
         this.ip = ip;
+        this.id = zone + '-' + ip;
         this.devices = devices || [];
     }
 
@@ -59,18 +61,18 @@ THE SOFTWARE.
         __END__: null
     };
 
-    function Zone(id, devices, options) {
+    function Zone(id, nodes, options) {
         options = options || {};
         this.id = id;
-        this.devices = devices || [];
+        this.nodes = nodes || [];
     }
 
     /**
         A Zone model
     **/
     Zone.prototype = {
-        add_device: function (device) {
-            this.devices.push(device);
+        add_node: function (node) {
+            this.nodes.push(node);
         },
 
         // dummy end attribute
@@ -119,14 +121,14 @@ THE SOFTWARE.
                 zone_models[d.zone] = zone;
                 region.add_zone(zone);
             }
-            var node = node_models[d.ip];
+            var node = node_models[d.zone + '-' + d.ip];
             if (typeof node === 'undefined') {
-                node = new Node(d.ip);
-                node_models[d.ip] = node;
+                node = new Node(d.zone, d.ip);
+                node_models[node.id] = node;
+                zone.add_node(node);
             }
             var device = new Device(d.id, d.ip, d.port, d.weight, d.parts);
             device_models[d.id] = device;
-            zone.add_device(device);
             node.add_device(device);
         });
         return {
