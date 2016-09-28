@@ -194,7 +194,13 @@
                 .text(function(d) { return 'W: ' + d.weight; })
             ;
         };
-        draw_balanced_bar(160 * 2 + 40, 0, 800, 200);
+        // TODO: layout that scales to 1000's of devices
+        dev_models = dev_models.slice(0, 64);
+        var dev_model_width = 44 * dev_models.length;
+        if ( dev_model_width > 800 ) {
+          svg.attr('width', 160 * 2 + 40 + dev_model_width + 10);
+        }
+        draw_balanced_bar(160 * 2 + 40, 0, Math.max(dev_model_width, 800), 200);
 
     </script>
     {% endif %}
